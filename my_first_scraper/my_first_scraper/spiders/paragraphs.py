@@ -3,35 +3,56 @@
 from bs4 import BeautifulSoup
 import scrapy
 import time
+import os
 
 
-def isEmptyString(x):
-    if len(x) == 0:
-        return False
-    else:
-        return True
+
+
+def findtitle(soup):
+
+    title = soup.find('h1', 'content-title')
+    title_name = "Null"
+    if title is not None:
+        title_name = title.find(text=True)
+        return title_name
+
+    title = soup.find('h1', class_="entry-title")
+    if title is not None:
+        title_name = title.find(text=True)
+        return title
+
+
+def findtype(soup):
+    type_ = soup.find('span', itemprop='name')
+
+    type_name = "Null"
+    if type_ is not None:
+        type_name = type_.find(text=True)
+        return type_name
+
+
+def process
+
+
+
 
 class LinkCheckerSpider(scrapy.Spider):
     name = 'paragraph_cralwer'
     allowed_domains = ['www.mist.com']
-    start_urls = ['https://www.mist.com/documentation']
-#    start_urls = ["https://www.mist.com/documentation/category/getting-started/"]
+    # start_urls = ['https://www.mist.com/documentation/why-do-clients-disconnect-when-you-add-a-new-wlan']
+    # start_urls = ['https://www.mist.com/documentation/']
+    start_urls = ["https://www.mist.com/documentation/category/getting-started/"]
+    # start_urls = ['https://www.mist.com/documentation/wifi6-802-11ax-overview/']
+    # start_urls = ['https://www.mist.com/documentation/mist-ap-mounting/']
 
     def parse(self, response):
 
         soup = BeautifulSoup(response.text, 'lxml')
 
         # Scrapes general info from the page
-        type_ = soup.find('span', itemprop='name')
 
-        type_name = "Null"
-        if type_ is not None:
-            type_name = type_.find(text=True)
-
-        title = soup.find('h1', 'content-title')
-        title_name = "Null"
-        if title is not None:
-            title_name = title.find(text=True)
+        type_name = findtype(soup)
+        title_name = findtitle(soup)
 
         articles = soup.find_all('article')
 
@@ -40,7 +61,7 @@ class LinkCheckerSpider(scrapy.Spider):
 
             subtitle_html = article.find('h2', class_='entry-title')
             subtitle_name = "Null"
-            if title is not None:
+            if subtitle_html is not None:
                 subtitle_name = subtitle_html.find(text=True)
 
             entry = article.find('div', class_='entry-content')
@@ -64,18 +85,65 @@ class LinkCheckerSpider(scrapy.Spider):
             }
             paragraph = paragraph + 1
 
-        # Follows all links to the rest of the webpages reachable from this one
-        links = []
-        a_selectors = response.xpath("//a")
+        # Processes content that is formatted in paragraphs
+        processed_image = False
+        blocks = soup.findAll('p', class_=None)
+        for i in range(len(blocks)):
+            if processed_image:
+                processed_image = False
+                continue
 
-        for selector in a_selectors:
-            links.append(selector.xpath("@href").extract_first())
+            snippet = "Null"
+            if blocks[i] is not None:
+                snippets = blocks[i].findAll(text=True)
+                snippet = ""
+                for snip in snippets:
+                    snippet = snippet + snip
 
-        for link in links:
+            image_url = "Null"
+            image_name = "Null"
+            if i < len(blocks) - 2 and blocks[i+1].find('img') is not None:
+                image_url = blocks[i+1].find('img').get('src')
+                image_name = os.path.basename(image_url)
+                processed_image = True
 
-            if link is not None:
-                request = response.follow(link, callback=self.parse)
-                yield request
+            yield {
+                'url': response.request.url,
+                'paragraph_number': paragraph,
+                'snippet': str(snippet).strip(),
+                'subtitle': "Null",
+                'title': str(title_name),
+                'image': image_name,
+                'image_url': image_url,
+                'type': type_name,
+                'creationDate': int(time.time()),
+                'snippet_vector': ["to be implemented"]
+
+            }
+            paragraph = paragraph + 1
+
+
+
+
+
+
+
+
+
+
+
+        #Follows all links to the rest of the webpages reachable from this one
+        # links = []
+        # a_selectors = response.xpath("//a")
+        #
+        # for selector in a_selectors:
+        #     links.append(selector.xpath("@href").extract_first())
+        #
+        # for link in links:
+        #     print(link)
+        #     if link is not None:
+        #         request = response.follow(link, callback=self.parse)
+        #         yield request
 
 
 
