@@ -1,9 +1,9 @@
 
 
-
 from bs4 import BeautifulSoup
 import scrapy
 import time
+
 
 def isEmptyString(x):
     if len(x) == 0:
@@ -11,43 +11,51 @@ def isEmptyString(x):
     else:
         return True
 
-
-
 class LinkCheckerSpider(scrapy.Spider):
     name = 'paragraph_cralwer'
     allowed_domains = ['www.mist.com']
-    # start_urls = ['https://www.mist.com/documentation']
-    start_urls = ["https://www.mist.com/documentation/category/getting-started/"]
+    start_urls = ['https://www.mist.com/documentation']
+#    start_urls = ["https://www.mist.com/documentation/category/getting-started/"]
 
     def parse(self, response):
 
         soup = BeautifulSoup(response.text, 'lxml')
 
-        type = soup.find('span', itemprop='name')
-        type_name = type.find(text=True)
+        # Scrapes general info from the page
+        type_ = soup.find('span', itemprop='name')
+
+        type_name = "Null"
+        if type_ is not None:
+            type_name = type_.find(text=True)
 
         title = soup.find('h1', 'content-title')
-        title_name = title.find(text=True)
+        title_name = "Null"
+        if title is not None:
+            title_name = title.find(text=True)
+
         articles = soup.find_all('article')
 
         paragraph = 1
         for article in articles:
+
             subtitle_html = article.find('h2', class_='entry-title')
-            subtitle_name = subtitle_html.find(text=True)
+            subtitle_name = "Null"
+            if title is not None:
+                subtitle_name = subtitle_html.find(text=True)
 
             entry = article.find('div', class_='entry-content')
-            snippet = entry.find(text=True)
-            print(type(snippet))
+            snippet = "Null"
+            if entry is not None:
+                snippet = entry.find(text=True)
 
-
-
+            # CHANGE THE ORDER OF THESE, url SHOULD COME AFTER image
             yield {
+                'url': response.request.url,
                 'paragraph_number': paragraph,
                 'snippet': str(snippet).strip(),
                 'subtitle': str(subtitle_name),
                 'title': str(title_name),
                 'image': "null",
-                'url': response.request.url,
                 'image_url': "null",
                 'type': type_name,
                 'creationDate': int(time.time()),
@@ -56,9 +64,18 @@ class LinkCheckerSpider(scrapy.Spider):
             }
             paragraph = paragraph + 1
 
+        # Follows all links to the rest of the webpages reachable from this one
+        links = []
+        a_selectors = response.xpath("//a")
 
+        for selector in a_selectors:
+            links.append(selector.xpath("@href").extract_first())
 
+        for link in links:
 
+            if link is not None:
+                request = response.follow(link, callback=self.parse)
+                yield request
 
 
 
