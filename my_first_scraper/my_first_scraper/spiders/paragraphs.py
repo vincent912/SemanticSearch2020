@@ -4,9 +4,9 @@ from bs4 import BeautifulSoup
 import scrapy
 import time
 import os
+import re
 
-
-
+# sed '/.*www.mist.com\/documentation.*/!d' items.jl > items_filtered.jl
 
 def findtitle(soup):
 
@@ -19,7 +19,7 @@ def findtitle(soup):
     title = soup.find('h1', class_="entry-title")
     if title is not None:
         title_name = title.find(text=True)
-        return title
+        return title_name
 
 
 def findtype(soup):
@@ -31,17 +31,14 @@ def findtype(soup):
         return type_name
 
 
-def process
-
-
 
 
 class LinkCheckerSpider(scrapy.Spider):
     name = 'paragraph_cralwer'
     allowed_domains = ['www.mist.com']
     # start_urls = ['https://www.mist.com/documentation/why-do-clients-disconnect-when-you-add-a-new-wlan']
-    # start_urls = ['https://www.mist.com/documentation/']
-    start_urls = ["https://www.mist.com/documentation/category/getting-started/"]
+    start_urls = ['https://www.mist.com/documentation/']
+    # start_urls = ["https://www.mist.com/documentation/category/getting-started/"]
     # start_urls = ['https://www.mist.com/documentation/wifi6-802-11ax-overview/']
     # start_urls = ['https://www.mist.com/documentation/mist-ap-mounting/']
 
@@ -50,12 +47,11 @@ class LinkCheckerSpider(scrapy.Spider):
         soup = BeautifulSoup(response.text, 'lxml')
 
         # Scrapes general info from the page
-
         type_name = findtype(soup)
         title_name = findtitle(soup)
 
+        # Processes all articles in the page
         articles = soup.find_all('article')
-
         paragraph = 1
         for article in articles:
 
@@ -73,7 +69,7 @@ class LinkCheckerSpider(scrapy.Spider):
             yield {
                 'url': response.request.url,
                 'paragraph_number': paragraph,
-                'snippet': str(snippet).strip(),
+                'snippet': re.sub("\u00a9|\u00a0|\u2018|\u201d|\u2019|\u2013", "", str(snippet).strip()),
                 'subtitle': str(subtitle_name),
                 'title': str(title_name),
                 'image': "null",
@@ -110,7 +106,7 @@ class LinkCheckerSpider(scrapy.Spider):
             yield {
                 'url': response.request.url,
                 'paragraph_number': paragraph,
-                'snippet': str(snippet).strip(),
+                'snippet': re.sub("\u00a9|\u00a0|\u2018|\u201d|u\2019|\u2013", "", str(snippet).strip()),
                 'subtitle': "Null",
                 'title': str(title_name),
                 'image': image_name,
@@ -124,26 +120,18 @@ class LinkCheckerSpider(scrapy.Spider):
 
 
 
+        # Follows all links to the rest of the webpages reachable from this one
+        links = []
+        a_selectors = response.xpath("//a")
 
+        for selector in a_selectors:
+            links.append(selector.xpath("@href").extract_first())
 
-
-
-
-
-
-
-        #Follows all links to the rest of the webpages reachable from this one
-        # links = []
-        # a_selectors = response.xpath("//a")
-        #
-        # for selector in a_selectors:
-        #     links.append(selector.xpath("@href").extract_first())
-        #
-        # for link in links:
-        #     print(link)
-        #     if link is not None:
-        #         request = response.follow(link, callback=self.parse)
-        #         yield request
+        for link in links:
+            print(link)
+            if link is not None:
+                request = response.follow(link, callback=self.parse)
+                yield request
 
 
 
