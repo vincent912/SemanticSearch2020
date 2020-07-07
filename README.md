@@ -1,6 +1,13 @@
-# scrapy2020
+# SemanticSearch2020
 
-Implementation of a scraper that creates entries for documentation's content in a json format.
+Implementation of a search tool that searhces based off of semantics insteaad of keywords.
+
+Uses universal sentence encoder from:
+https://tfhub.dev/google/universal-sentence-encoder/4
+to encode queries and entries. For this project, entries are scraped from the Mist company's documentation websites.
+https://www.mist.com/documentation
+
+The results are loaded into an Elasticseach index, which which can be queired using a simple flask web app that acts like a testing harness/
 
 The following schema is what the output should look like:
 

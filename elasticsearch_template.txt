@@ -1,0 +1,52 @@
+
+
+PUT _index_template/semantic_search_temp
+{
+  "index_patterns": [
+    "test_index_*"
+  ],
+  "template": {
+    "settings": {
+      "number_of_shards": 1,
+      "refresh_interval": "30s"
+    },
+    "mappings": {
+      "_source": {
+        "enabled": true
+      },
+      "properties": {
+        "url": {
+          "type": "text"
+        },
+        "paragraph_numebr": {
+          "type": "short"
+        },
+        "snippet": {
+          "type": "text"
+        },
+        "subtitle": {
+          "type": "keyword"
+        },
+        "title": {
+          "type": "keyword"
+        },
+        "image": {
+          "type": "keyword"
+        },
+        "image_url": {
+          "type": "keyword"
+        },
+        "type": {
+          "type": "keyword"
+        },
+        "creation_date": {
+          "type": "integer"
+        },
+        "snippet_vector": {
+          "type": "dense_vector",
+          "dims": 512
+        }
+      }
+    }
+  }
+}
