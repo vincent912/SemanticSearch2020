@@ -7,20 +7,16 @@ https://tfhub.dev/google/universal-sentence-encoder/4
 to encode queries and entries. For this project, entries are scraped from the Mist company's documentation websites.
 https://www.mist.com/documentation
 
-The results are loaded into an Elasticseach index, which which can be queired using a simple flask web app that acts like a testing harness/
+The results are loaded into an Elasticseach index, which which can be queried using a simple flask web app that acts like a testing harness.
 
-The following schema is what the output should look like:
+Key Files:
+my_first_scraper/spiders/paragraphs.py - the spider that crawls mist.com for all entries that will eventually be searched over.
 
-{
-          "paragraph_number" : 2,
-          "snippet" : "On the Client Events in the Insights page, you will see an AP Deauthentication being sent to the clients when the changes are made. You can refer the audit log for the same.",
-          "subtitle" : null,
-          "title" : "Why do clients disconnect when you add a new WLAN?",
-          "image" : "Screen-Shot-2020-03-26-at-2.55.00-PM.png",
-          "url" : "https://www.mist.com/documentation/why-do-clients-disconnect-when-you-add-a-new-wlan",
-          "image_url" : "https://raw.githubusercontent.com/Abe13/Marvin_chatbot/master/images/Screen-Shot-2020-03-26-at-2.55.00-PM.png",
-          "type" : "Wifi-FAQ",
-          "creationDate" : 1589473908412,
-          "snippet_vector" : [
-	  ]
-}
+my_first_scraper/items.jl - this contains the raw information scraped from https://www.mist.com/documentation
+
+SmartSearch/items_filtered.jl - This file is items.jl after it has been run through item_processor.sh. This removes all special unicode characters, all line feeds, and all non-documentation related pages.
+
+SmartSearch/items_sem_title_w_snippet.jl - This file contains all entries in items_filtered.jl aafter it has been run through USE_embed.py. This attaches the snippet_vector field to each entry, which uses the universal semantic encoder to create a semantic vector for each entry.
+
+SmartSearch/items_es_ready.jl - This file is items_sem_title_w_snippet.jl each it is interleaved with {"index":{}} between entries. This file is ready to be input into an Elasticsearch instance with an appropriate curl command that can be found in load_into_es.sh
+
