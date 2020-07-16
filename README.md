@@ -10,7 +10,11 @@ This project creates a better search tool that finds the semantics of a query an
 
 Overview
 -----------
-All useful information from [Mist's documenation](https://www.mist.com/documentation) is first scraped using scrapy. The resulting entries with snippets are then cleaned, and then their semantic vectors are calculated using a [universal sentence encoder](https://tfhub.dev/google/universal-sentence-encoder/4). The data is loaded into an Elasticsearch index, which is capable of scoring and querying based on cosine similarity. A simple flask web app serves as a testing harness, which takes a query string, finds its semantic vector, then queries the Elasticsearch index. The index returns results whose semantic vectors have the highest cosine similarity to the query's semantic vector, which are then displayed to the user by the Flask app. 
+All useful information from [Mist's documenation](https://www.mist.com/documentation) is first scraped using scrapy. The resulting entries with snippets are then cleaned, and then their semantic vectors are calculated using a [universal sentence encoder](https://tfhub.dev/google/universal-sentence-encoder/4). The data is loaded into an Elasticsearch index, which is capable of scoring and querying based on cosine similarity. A simple flask web app serves as a testing harness, which takes a query string, finds its semantic vector, then queries the Elasticsearch index. The index returns results whose semantic vectors have the highest cosine similarity to the query's semantic vector, which are then displayed to the user by the Flask app.  
+
+Sample output:
+![output](/images/output.jpg)
+
 
 Process Details
 ----------
@@ -22,7 +26,10 @@ To find the semantics of each entry/snippet, this [universal sentence encoder](h
 
 Before the data can be loaded into Elasticsearch, an index_template `elasticsearch_template.txt` was created that outlined the "shape" of the data that was going to be loaded. This included information about each entry like what the name of each piece or information is, what data type each piece of info is, how many dimensions the semantic vector is, etc. Afterwards, the data in a json lines file, consisting of entries representing paragraphs from Mist's documentation including its semantic vector, was formatted properly and then loaded into an elasticsearch index using a curl command. Now, queries can be made by issuing a request to the elasticsearch data base.  
 
-To make testing and performance evaluation easier, I created a Flask app to act as a test harness for this search engine. The app only consists of one page, which has a search bar and an enter button. Once text is entered into the search bar, the flask app takes it and calculates its semantic vector using the [universal sentence encoder](https://tfhub.dev/google/universal-sentence-encoder/4). It then queries the elasticsearch index, which returns results such that the first result's semantic vector has the highest cosine similarity to the query's semantic vector, and the last result has the lowest cosine similarity. The top five unique urls that contain the most similar snippet's are then displayed in the web app.
+To make testing and performance evaluation easier, I created a Flask app to act as a test harness for this search engine. The app only consists of one page, which has a search bar and an enter button. Once text is entered into the search bar, the flask app takes it and calculates its semantic vector using the [universal sentence encoder](https://tfhub.dev/google/universal-sentence-encoder/4). It then queries the elasticsearch index, which returns results such that the first result's semantic vector has the highest cosine similarity to the query's semantic vector, and the last result has the lowest cosine similarity. The top five unique urls that contain the most similar snippet's are then displayed in the web app.  
+
+Project Flowchart:
+![flowchart](/images/SemanticSearch2020_diagram.pdf)
 
 Performance
 ---------------
