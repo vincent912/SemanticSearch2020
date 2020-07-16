@@ -1,12 +1,12 @@
 SemanticSearch2020
 ================
-July 15, 2020
+Updated: July 15, 2020
 -------------
 
 The functionality of the search tool on [Mist's documenation](https://www.mist.com/documentation) page currently uses some form of keyword searches that fails to return relevant search results. For example, when I enter into the search bar "AP Upgrades" and look at the [results](https://www.mist.com/?s=AP+upgrades), the search tool does not return the page titled [AP Upgrades](https://www.mist.com/documentation/ap-upgrades/).  
 
 
-This project creates a better search tool that finds the semantics of a query and finds the results that have the closest meaning to the search. More details on the motivation for the project can be found in the project_motivation.pdf file.
+This project creates a better search tool that finds the semantics of a query and finds the results that have the closest meaning to the search. More details on the motivation for the project can be found in the `project_motivation.pdf` file.
 
 Overview
 -----------
@@ -27,7 +27,7 @@ To make testing and performance evaluation easier, I created a Flask app to act 
 Performance
 ---------------
 In order to give a concrete measure of performance, I took questions found from [Mist's Documentation Wifi FAQ](https://www.mist.com/documentation/category/wifi-faq/) page and used those as test queries. If the relevant page from the FAQ is found in the top 5 results, the test will be considered a success. Otherwise, we will consider the test a failure. The performance of SemanticSearch will then be compared to the results of the current search tool. I took the first 20 questions on that FAQ page to test each search tool. The results:  
-> SemanticSearch: 20 successes out of 20
+> SemanticSearch: 20 successes out of 20  
 > Current search tool: 3 successes out of 20 
 
 Based on this test alone, we can see that the SemanticSearch tool is performing better than the current search tool. Despite the fact that a search tool's power can't really be measured just by one test like this, I can see from this test that all of the top five results that SemanticSearch returns are all relevant in some way to the query in question. This is in contrast to the current search tool that gets caught up on popular keywords in the query like Mist and AP, and returns results based off of those hot keywords instead of taking  the whole query into account.  
