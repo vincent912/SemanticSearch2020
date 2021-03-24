@@ -1,7 +1,6 @@
 import tensorflow_hub as hub
 import json
 
-
 def embed_use():
     return hub.load("https://tfhub.dev/google/universal-sentence-encoder/4")
 
@@ -15,22 +14,22 @@ def embed_use():
 def create_semantic_vectors(in_file, out_file):
     data = []
 
+
     with open(in_file) as f:
         for line in f:
             data.append(json.loads(line))
 
     embed = embed_use()
+
     o = open(out_file, "w")
 
     for i in range(len(data)):
-        # title_and_snippet = data[i]["title"]
-        # if data[i]["title"] is not "Null":
-        #     title_and_snippet = data[i]["snippet"]
         data[i]["snippet_vector"] = embed([data[i]["snippet"]])[0].numpy().tolist()
+        o.write("{\"index\":{}}\n")
         line = json.dumps(dict(data[i])) + "\n"
         o.write(line)
 
     o.close()
 
 
-create_semantic_vectors("items_filtered.jl", "items_es_ready.jl")
+create_semantic_vectors("python_items_filtered.jl", "python_items_es_ready.jl")
